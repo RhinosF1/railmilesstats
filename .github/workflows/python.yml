@@ -1,0 +1,28 @@
+name: Check Python
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.11', '3.12']
+    env:
+      DEBUG_ACCESS_KEY: ${{ secrets.DEBUG_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }} 
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgnutls28-dev
+          pip install -U pip
+          pip install -r .github/pythonchecks.txt
+      - name: Run tests
+        run: |
+          flake8 --ignore=E501,W503,SFS301,T003,PT009
+          coverage run --branch -m pytest tests
+          mypy --ignore-missing-imports --disallow-untyped-defs
