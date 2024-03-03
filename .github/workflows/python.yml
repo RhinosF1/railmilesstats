@@ -24,4 +24,4 @@ jobs:
       - name: Run tests
         run: |
           flake8 --ignore=E501,W503,SFS301,T003,PT009
-          mypy --ignore-missing-imports --disallow-untyped-defs
+          mypy --ignore-missing-imports --disallow-untyped-defs railstats.py
