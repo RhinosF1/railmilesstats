@@ -1,6 +1,6 @@
 import json
 import sys
-counts = {}
+counts = dict()
 counts['origins'] = {}
 counts['dests'] = {}
 counts['station_visits'] = {}
@@ -22,53 +22,51 @@ counts['percent_delayed_by_operator'] = {}
 with open(str(sys.argv[1])) as f:
     data = json.loads(f.read())
     for row in data['journeys']:
-        if row['origin'] in counts['origins'].keys():
+        if row['origin'] in counts['origins']:
             counts['origins'][row['origin']] += 1
         else:
             counts['origins'][row['origin']] = 1
-        
+
         if row['destination'] in counts['dests'].keys():
             counts['dests'][row['destination']] += 1
         else:
             counts['dests'][row['destination']] = 1
         
-        if row['origin'] in counts['station_visits'].keys():
+        if row['origin'] in counts['station_visits']:
             counts['station_visits'][row['origin']] += 1
         else:
             counts['station_visits'][row['origin']] = 1
-        
-        if row['destination'] in counts['station_visits'].keys():
+
+        if row['destination'] in counts['station_visits']:
             counts['station_visits'][row['destination']] += 1
         else:
-            counts['station_visits'][row['destination']] = 1
-        
+            counts['station_visits'][row['destination']] = 1  
 
         if row['act_arrival_status'] == "":
             row['act_arrival_status'] = "RT"
-        if row['act_arrival_status'] in counts['arrival_status'].keys():
+        if row['act_arrival_status'] in counts['arrival_status']:
             counts['arrival_status'][row['act_arrival_status']] += 1
         else:
             counts['arrival_status'][row['act_arrival_status']] = 1
         if row['operator']['code'] not in counts['arrival_status_by_operator'].keys():
             counts['arrival_status_by_operator'][row['operator']['code']] = {}
-        if row['act_arrival_status'] in counts['arrival_status_by_operator'][row['operator']['code']].keys():
+        if row['act_arrival_status'] in counts['arrival_status_by_operator'][row['operator']['code']]:
             counts['arrival_status_by_operator'][row['operator']['code']][row['act_arrival_status']] += 1
         else:
             counts['arrival_status_by_operator'][row['operator']['code']][row['act_arrival_status']] = 1
 
-        if row['act_departure_status'] == "":
-            row['act_departure_status'] = "RT"
-        if row['act_departure_status'] in counts['dept_status'].keys():
+        if row['act_departure_status'] == '':
+            row['act_departure_status'] = 'RT'
+        if row['act_departure_status'] in counts['dept_status']:
             counts['dept_status'][row['act_departure_status']] += 1
         else:
             counts['dept_status'][row['act_departure_status']] = 1
 
-        if row['act_delay']:
-            if not row['act_delay'] < 0:
-                counts['delaymins'] += row['act_delay']
-                if row['operator']['code'] not in counts['delaymins_by_operator'].keys():
-                    counts['delaymins_by_operator'][row['operator']['code']] = 0
-                counts['delaymins_by_operator'][row['operator']['code']] += row['act_delay']
+        if row['act_delay'] and not row['act_delay'] < 0:
+            counts['delaymins'] += row['act_delay']
+            if row['operator']['code'] not in counts['delaymins_by_operator'].keys():
+                counts['delaymins_by_operator'][row['operator']['code']] = 0
+            counts['delaymins_by_operator'][row['operator']['code']] += row['act_delay']
         if row['duration']:
             counts['duration'] += row['duration']
             if row['operator']['code'] not in counts['duration_by_operator'].keys():
@@ -76,25 +74,24 @@ with open(str(sys.argv[1])) as f:
             counts['duration_by_operator'][row['operator']['code']] += row['duration']
         if row['distance']['value']:
             counts['distance'] += float(row['distance']['value'])
-        
 
-        if row['operator']['code'] == None:
-            row['operator']['code'] = "Unknown"
-        if row['operator']['code'] in counts['operator'].keys():
+        if row['operator']['code'] is None:
+            row['operator']['code'] = 'Unknown'
+        if row['operator']['code'] in counts['operator']:
             counts['operator'][row['operator']['code']] += 1
         else:
             counts['operator'][row['operator']['code']] = 1
-        
-        if row['identity'] == None:
-            row['identity'] = "Unknown"
-        if row['identity'] in counts['identity'].keys():
+
+        if row['identity'] is None:
+            row['identity'] = 'Unknown'
+        if row['identity'] in counts['identity']:
             counts['identity'][row['identity']] += 1
         else:
             counts['identity'][row['identity']] = 1
         
-        if row['reason'] == None:
-            row['reason'] = "Unknown"
-        if row['reason'] in counts['reason'].keys():
+        if row['reason'] is None:
+            row['reason'] = 'Unknown'
+        if row['reason'] in counts['reason']:
             counts['reason'][row['reason']] += 1
         else:
             counts['reason'][row['reason']] = 1
@@ -102,46 +99,40 @@ with open(str(sys.argv[1])) as f:
             row['traction'] = ['Unknown']
         for traction in row['traction']:
             trclass = traction[:3]
-            if traction in counts['traction'].keys():
+            if traction in counts['traction']:
                 counts['traction'][traction] += 1
             else:
                 counts['traction'][traction] = 1
-            if trclass in counts['class'].keys():
+            if trclass in counts['class']:
                 counts['class'][trclass] += 1
             else:
                 counts['class'][trclass] = 1
     for operator in counts['operator']:
         counts['percent_delayed_by_operator'][operator] = 0.0
-        if 'late' in counts['arrival_status_by_operator'][operator].keys():
-            counts['percent_delayed_by_operator'][operator] = counts['arrival_status_by_operator'][operator]['late']/counts['operator'][operator]
-    
-    counts['duration/delay'] = counts['duration']/counts['delaymins']
-    counts['delay/distance'] = counts['delaymins']/counts['distance']
-    counts['speed'] = (int(counts['distance'])/counts['duration'])*60
+        if 'late' in counts['arrival_status_by_operator'][operator]:
+            counts['percent_delayed_by_operator'][operator] = counts['arrival_status_by_operator'][operator]['late'] / counts['operator'][operator]
+
+    counts['duration/delay'] = counts['duration'] / counts['delaymins']
+    counts['delay/distance'] = counts['delaymins'] / counts['distance']
+    counts['speed'] = (int(counts['distance']) / counts['duration'])*60
     counts['journeys'] = len(data['journeys'])
-    counts['delay/journey'] = counts['delaymins']/counts['journeys']
+    counts['delay/journey'] = counts['delaymins'] / counts['journeys']
     for operator in counts['duration_by_operator']:
-        if operator in counts['delaymins_by_operator'].keys():
+        if operator in counts['delaymins_by_operator']:
             if (counts['delaymins_by_operator'][operator] > 0):
-                counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator]/counts['delaymins_by_operator'][operator]
+                counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator] / counts['delaymins_by_operator'][operator]
         else:
             counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator]
-    
+
     for item in counts:
-        if item not in ['arrival_status_by_operator']:
-            #print('Sorting')
-            if type(counts[item]) == dict:
+        if item not in ['arrival_status_by_operator'] and isinstance(counts[item], dict):
                 temp = counts[item]
-                #print(temp)
-                #print('now showing sorted')
-                sorted_temp = sorted(temp.items(), key=lambda x:x[1])
-                #print(sorted_temp)
+                sorted_temp = sorted(temp.items(), key=lambda x : x[1])
                 sorted_temp = dict(sorted_temp)
-                #print(sorted_temp)
                 counts[item] = sorted_temp
 late_operators = []
 for operator in counts['arrival_status_by_operator']:
-    if 'late' in counts['arrival_status_by_operator'][operator].keys():
+    if 'late' in counts['arrival_status_by_operator'][operator]:
         late_operators.append(operator)
 worst_operator_by_delayed_journeys = late_operators[0]
 for operator in late_operators:
