@@ -1,6 +1,6 @@
 import json
 import sys
-counts = {} # noqa: SIM904
+counts = {}  # noqa: SIM904
 counts['origins'] = {}
 counts['dests'] = {}
 counts['station_visits'] = {}
@@ -153,7 +153,7 @@ print('DEBUG OUTPUT')
 print(json.dumps(counts, indent=2))
 print('Pretty Output')
 print(f'Between {sys.argv[2]} and {sys.argv[3]}, I have taken {counts["journeys"]} rail journeys spanning {int(counts["distance"])} miles taking {counts["duration"]} minutes.')
-print(f'That makes for an average speed of {int(counts["speed"])}mph and an average journey length of {int(counts["distance"]/counts["journeys"])} miles so {int((counts["duration"])/(counts["journeys"]))} minutes per journey.')
+print(f'That makes for an average speed of {int(counts["speed"])}mph and an average journey length of {int(counts["distance"] / counts["journeys"])} miles so {int((counts["duration"]) / (counts["journeys"]))} minutes per journey.')
 print(f'This involved arriving or departing from {len(counts["station_visits"])} different stations with the most popular being {list(counts["station_visits"])[-1]}.')
 print('All of the stations I visted were:')
 print(*list(counts['station_visits']), sep=', ')
@@ -163,7 +163,7 @@ print(f'We managed to arrive early on {counts["arrival_status"]["early"]} occass
 print(f'We make for an average of {counts["delay/distance"]} delay minutes per mile or {int(counts["delay/journey"])} minutes per journey.')
 print(f'The most used headcode was {list(counts["identity"])[-1]}.')
 print(f'{worst_operator_by_delayed_journeys} scores the most delayed journeys with {counts["arrival_status_by_operator"][worst_operator_by_delayed_journeys]["late"]} journeys delayed.')
-print(f'but compared to number of journeys, the most likely operator for a delay is {list(counts["percent_delayed_by_operator"])[-1]} with {int((counts["percent_delayed_by_operator"][list(counts["percent_delayed_by_operator"])[-1]])*100)}% delayed.')
+print(f'but compared to number of journeys, the most likely operator for a delay is {list(counts["percent_delayed_by_operator"])[-1]} with {int((counts["percent_delayed_by_operator"][list(counts["percent_delayed_by_operator"])[-1]]) * 100)}% delayed.')
 print(f'{worst_operator_by_delaymins} scores the most delay minutes with {counts["delaymins_by_operator"][worst_operator_by_delaymins]} minutes delay.')
 print(f'but compared to duration, the most likely operator for a delay is {list(counts["duration/delay_by_operator"])[0]} with {int(counts["duration/delay_by_operator"][list(counts["duration/delay_by_operator"])[0]])} delay minutes per minute travel.')
 print('Our operators with 0% delays are:')
