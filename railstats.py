@@ -1,6 +1,6 @@
 import json
 import sys
-counts = dict()
+counts = {}
 counts['origins'] = {}
 counts['dests'] = {}
 counts['station_visits'] = {}
@@ -27,11 +27,11 @@ with open(str(sys.argv[1])) as f:
         else:
             counts['origins'][row['origin']] = 1
 
-        if row['destination'] in counts['dests'].keys():
+        if row['destination'] in counts['dests']:
             counts['dests'][row['destination']] += 1
         else:
             counts['dests'][row['destination']] = 1
-        
+
         if row['origin'] in counts['station_visits']:
             counts['station_visits'][row['origin']] += 1
         else:
@@ -40,10 +40,10 @@ with open(str(sys.argv[1])) as f:
         if row['destination'] in counts['station_visits']:
             counts['station_visits'][row['destination']] += 1
         else:
-            counts['station_visits'][row['destination']] = 1  
+            counts['station_visits'][row['destination']] = 1 
 
-        if row['act_arrival_status'] == "":
-            row['act_arrival_status'] = "RT"
+        if row['act_arrival_status'] == '':
+            row['act_arrival_status'] = 'RT'
         if row['act_arrival_status'] in counts['arrival_status']:
             counts['arrival_status'][row['act_arrival_status']] += 1
         else:
@@ -88,7 +88,7 @@ with open(str(sys.argv[1])) as f:
             counts['identity'][row['identity']] += 1
         else:
             counts['identity'][row['identity']] = 1
-        
+
         if row['reason'] is None:
             row['reason'] = 'Unknown'
         if row['reason'] in counts['reason']:
@@ -126,10 +126,10 @@ with open(str(sys.argv[1])) as f:
 
     for item in counts:
         if item not in ['arrival_status_by_operator'] and isinstance(counts[item], dict):
-                temp = counts[item]
-                sorted_temp = sorted(temp.items(), key=lambda x : x[1])
-                sorted_temp = dict(sorted_temp)
-                counts[item] = sorted_temp
+            temp = counts[item]
+            sorted_temp = sorted(temp.items(), key=lambda x: x[1])
+            sorted_temp = dict(sorted_temp)
+            counts[item] = sorted_temp
 late_operators = []
 for operator in counts['arrival_status_by_operator']:
     if 'late' in counts['arrival_status_by_operator'][operator]:
@@ -155,7 +155,7 @@ print('Pretty Output')
 print(f'Between {sys.argv[2]} and {sys.argv[3]}, I have taken {counts["journeys"]} rail journeys spanning {int(counts["distance"])} miles taking {counts["duration"]} minutes.')
 print(f'That makes for an average speed of {int(counts["speed"])}mph and an average journey length of {int(counts["distance"]/counts["journeys"])} miles so {int((counts["duration"])/(counts["journeys"]))} minutes per journey.')
 print(f'This involved arriving or departing from {len(counts["station_visits"])} different stations with the most popular being {list(counts["station_visits"])[-1]}.')
-print(f'All of the stations I visted were:')
+print('All of the stations I visted were:')
 print(*list(counts['station_visits']), sep=', ')
 print(f'The most popular operator was {list(counts["operator"])[-1]} of the {len(counts["operator"])} I used and most popular traction {list(counts["traction"])[-1]} of {len(counts["traction"])} units I\'ve been on.')
 print(f'I have seen the most of class {list(counts["class"])[-1]} trains with {counts["class"][list(counts["class"])[-1]]} occurences of them.')
@@ -166,7 +166,7 @@ print(f'{worst_operator_by_delayed_journeys} scores the most delayed journeys wi
 print(f'but compared to number of journeys, the most likely operator for a delay is {list(counts["percent_delayed_by_operator"])[-1]} with {int((counts["percent_delayed_by_operator"][list(counts["percent_delayed_by_operator"])[-1]])*100)}% delayed.')
 print(f'{worst_operator_by_delaymins} scores the most delay minutes with {counts["delaymins_by_operator"][worst_operator_by_delaymins]} minutes delay.')
 print(f'but compared to duration, the most likely operator for a delay is {list(counts["duration/delay_by_operator"])[0]} with {int(counts["duration/delay_by_operator"][list(counts["duration/delay_by_operator"])[0]])} delay minutes per minute travel.')
-print(f'Our operators with 0% delays are:')
+print('Our operators with 0% delays are:')
 no_delay_ops = []
 for operator in counts['percent_delayed_by_operator']:
     if counts['percent_delayed_by_operator'][operator] == 0.0:
