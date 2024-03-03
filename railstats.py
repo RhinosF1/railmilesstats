@@ -1,6 +1,6 @@
 import json
 import sys
-counts = {}
+counts = {} # noqa: SIM904
 counts['origins'] = {}
 counts['dests'] = {}
 counts['station_visits'] = {}
@@ -40,7 +40,7 @@ with open(str(sys.argv[1])) as f:
         if row['destination'] in counts['station_visits']:
             counts['station_visits'][row['destination']] += 1
         else:
-            counts['station_visits'][row['destination']] = 1 
+            counts['station_visits'][row['destination']] = 1
 
         if row['act_arrival_status'] == '':
             row['act_arrival_status'] = 'RT'
@@ -114,7 +114,7 @@ with open(str(sys.argv[1])) as f:
 
     counts['duration/delay'] = counts['duration'] / counts['delaymins']
     counts['delay/distance'] = counts['delaymins'] / counts['distance']
-    counts['speed'] = (int(counts['distance']) / counts['duration'])*60
+    counts['speed'] = (int(counts['distance']) / counts['duration']) * 60
     counts['journeys'] = len(data['journeys'])
     counts['delay/journey'] = counts['delaymins'] / counts['journeys']
     for operator in counts['duration_by_operator']:
