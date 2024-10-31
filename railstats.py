@@ -198,6 +198,7 @@ def get_data(data, counts):
             counts[item] = sorted_temp
     return counts
 
+
 def main():
     parser = argparse.ArgumentParser(description='Process rail journey data.')
     parser.add_argument('data_file', help='Path to the JSON data file')
@@ -221,7 +222,7 @@ def main():
     for operator in late_operators:
         if counts['arrival_status_by_operator'][operator]['late'] > counts['arrival_status_by_operator'][worst_operator_by_delayed_journeys]['late']:
             worst_operator_by_delayed_journeys = operator
-    
+
     late_identities = []
     for identity in counts['arrival_status_by_identity']:
         if 'late' in counts['arrival_status_by_identity'][identity]:
@@ -294,8 +295,7 @@ def main():
             no_delay_ops.append(operator)
     print(*list(no_delay_ops), sep=', ')
     print(f'The most to-time operator by delays per minute travelled is {list(counts["duration/delay_by_operator"])[-1]} with {int(counts["duration/delay_by_operator"][list(counts["duration/delay_by_operator"])[-1]])} minutes of travel needed per minute of delay.')
-    
-    
+
     print(f'{worst_identity_by_delayed_journeys} scores the most delayed journeys with {counts["arrival_status_by_identity"][worst_identity_by_delayed_journeys]["late"]} journeys delayed.')
     print(f'but compared to number of journeys, the most likely identity for a delay is {list(counts["percent_delayed_by_identity"])[-1]} with {int((counts["percent_delayed_by_identity"][list(counts["percent_delayed_by_identity"])[-1]]) * 100)}% delayed.')
     print(f'{worst_identity_by_delaymins} scores the most delay minutes with {counts["delaymins_by_identity"][worst_identity_by_delaymins]} minutes delay.')
@@ -308,6 +308,7 @@ def main():
     print(*list(no_delay_idens), sep=', ')
     print(f'The most to-time identity by delays per minute travelled is {list(counts["duration/delay_by_identity"])[-1]} with {int(counts["duration/delay_by_identity"][list(counts["duration/delay_by_identity"])[-1]])} minutes of travel needed per minute of delay.')
     print(f'My most popular reason for travel is {list(counts["reason"])[-1]} with {counts["reason"][list(counts["reason"])[-1]]} journeys')
+
 
 if __name__ == '__main__':
     main()
