@@ -33,12 +33,9 @@ with open(str(sys.argv[1])) as f:
     data = json.loads(f.read())
     for row in data['journeys']:
 
-        if row['operator']['code'] is None:
-            row['operator']['code'] = 'Unknown'
-        if row['identity'] is None:
-            row['identity'] = 'Unknown'
-        if row['reason'] is None:
-            row['reason'] = 'Unknown'
+        row['operator']['code'] = row['operator'].get('code', 'Unknown')
+        row['identity'] = row.get('identity', 'Unknown')
+        row['reason'] = row.get('reason', 'Unknown')
 
         if row['origin'] in counts['origins']:
             counts['origins'][row['origin']] += 1
