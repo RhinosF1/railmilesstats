@@ -14,6 +14,7 @@ def initialise_counts():
         'reason': {},
         'station_visits': {},
         'arrival_status': {'early': 0, 'RT': 0, 'late': 0},
+        'dept_status': {'early': 0, 'RT': 0, 'late': 0},
         'delaymins': 0,
         'duration': 0,
         'distance': 0,
