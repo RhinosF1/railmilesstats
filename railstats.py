@@ -6,6 +6,7 @@ import sys
 def initialise_counts():
     return {
         'origins': {},
+        'dests': {},
         'traction': {},
         'class': {},
         'operator': {},
