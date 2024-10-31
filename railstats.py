@@ -2,6 +2,7 @@
 import json
 import sys
 
+
 def initialise_counts():
     return {
         'origins': {},
@@ -28,8 +29,10 @@ def initialise_counts():
         'duration/delay_by_identity': {},
         'delay/distance_by_identity': {},
         'percent_delayed_by_identity': {},
-        'arrival_status_by_identity': {}
+        'arrival_status_by_identity': {},
     }
+
+
 def get_data(data, counts):
     for row in data['journeys']:
 
@@ -176,13 +179,13 @@ def get_data(data, counts):
             counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator] / counts['delaymins_by_operator'][operator]
         else:
             counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator]
-    
+
     for identity in counts['duration_by_identity']:
         if identity in counts['delaymins_by_identity']:
             counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity] / counts['delaymins_by_identity'][identity]
         else:
             counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity]
-    
+
     for item in counts:
         if item not in ['arrival_status_by_operator', 'arrival_status_by_identity'] and isinstance(counts[item], dict):
             temp = counts[item]
@@ -190,6 +193,7 @@ def get_data(data, counts):
             sorted_temp = dict(sorted_temp)
             counts[item] = sorted_temp
     return counts
+
 
 with open(str(sys.argv[1])) as f:
     data = json.loads(f.read())
