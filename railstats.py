@@ -232,7 +232,7 @@ if traction == 'Unknown':
     traction = list(counts['traction'])[-2]
 print(f'The most popular operator was {list(counts["operator"])[-1]} of the {len(counts["operator"])} I used and most popular traction {traction} of {len(counts["traction"])} units I\'ve been on.')
 print(f'I have seen the most of class {list(counts["class"])[-1]} trains with {counts["class"][list(counts["class"])[-1]]} occurences of them.')
-if 'early' in counts["arrival_status"]:
+if 'early' in counts['arrival_status']:
     print(f'We managed to arrive early on {counts["arrival_status"]["early"]} occassions, on time {counts["arrival_status"]["RT"]} times but were late {counts["arrival_status"]["late"]} times.')
 else:
     print(f'We managed to arrive late {counts["arrival_status"]["late"]} times.')
