@@ -31,7 +31,7 @@ counts['arrival_status_by_identity'] = {}
 with open(str(sys.argv[1])) as f:
     data = json.loads(f.read())
     for row in data['journeys']:
-            
+
         if row['operator']['code'] is None:
             row['operator']['code'] = 'Unknown'
         if row['identity'] is None:
@@ -115,7 +115,6 @@ with open(str(sys.argv[1])) as f:
         else:
             counts['operator'][row['operator']['code']] = 1
 
-
         if row['identity'] in counts['identity']:
             counts['identity'][row['identity']] += 1
         else:
@@ -141,7 +140,7 @@ with open(str(sys.argv[1])) as f:
         counts['percent_delayed_by_operator'][operator] = 0.0
         if 'late' in counts['arrival_status_by_operator'][operator]:
             counts['percent_delayed_by_operator'][operator] = counts['arrival_status_by_operator'][operator]['late'] / counts['operator'][operator]
-    
+
     for identity in counts['identity']:
         counts['percent_delayed_by_identity'][identity] = 0.0
         if 'late' in counts['arrival_status_by_identity'][identity]:
@@ -170,14 +169,13 @@ with open(str(sys.argv[1])) as f:
                 counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator] / counts['delaymins_by_operator'][operator]
         else:
             counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator]
-    
+
     for identity in counts['duration_by_identity']:
         if identity in counts['delaymins_by_identity']:
             if (counts['delaymins_by_identity'][identity] > 0):
                 counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity] / counts['delaymins_by_identity'][identity]
         else:
             counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity]
-
 
     for item in counts:
         if item not in ['arrival_status_by_operator', 'arrival_status_by_identity'] and isinstance(counts[item], dict):
@@ -229,19 +227,19 @@ print(f'That makes for an average speed of {int(counts["speed"])}mph and an aver
 print(f'This involved arriving or departing from {len(counts["station_visits"])} different stations with the most popular being {list(counts["station_visits"])[-1]}.')
 print('All of the stations I visted were:')
 print(*list(counts['station_visits']), sep=', ')
-traction = list(counts["traction"])[-1]
-if traction == "Unknown":
-    traction = list(counts["traction"])[-2]
+traction = list(counts['traction'])[-1]
+if traction == 'Unknown':
+    traction = list(counts['traction'])[-2]
 print(f'The most popular operator was {list(counts["operator"])[-1]} of the {len(counts["operator"])} I used and most popular traction {traction} of {len(counts["traction"])} units I\'ve been on.')
 print(f'I have seen the most of class {list(counts["class"])[-1]} trains with {counts["class"][list(counts["class"])[-1]]} occurences of them.')
 if 'early' in counts["arrival_status"]:
     print(f'We managed to arrive early on {counts["arrival_status"]["early"]} occassions, on time {counts["arrival_status"]["RT"]} times but were late {counts["arrival_status"]["late"]} times.')
 else:
-        print(f'We managed to arrive late {counts["arrival_status"]["late"]} times.')
+    print(f'We managed to arrive late {counts["arrival_status"]["late"]} times.')
 print(f'We make for an average of {counts["delay/distance"]} delay minutes per mile or {int(counts["delay/journey"])} minutes per journey.')
-headcode = list(counts["identity"])[-1]
-if headcode == "Unknown":
-    headcode = list(counts["identity"])[-2]
+headcode = list(counts['identity'])[-1]
+if headcode == 'Unknown':
+    headcode = list(counts['identity'])[-2]
 print(f'The most used headcode was {headcode}.')
 print(f'{worst_operator_by_delayed_journeys} scores the most delayed journeys with {counts["arrival_status_by_operator"][worst_operator_by_delayed_journeys]["late"]} journeys delayed.')
 print(f'but compared to number of journeys, the most likely operator for a delay is {list(counts["percent_delayed_by_operator"])[-1]} with {int((counts["percent_delayed_by_operator"][list(counts["percent_delayed_by_operator"])[-1]]) * 100)}% delayed.')
