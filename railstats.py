@@ -1,36 +1,36 @@
 
 import json
 import sys
-counts = {}  # noqa: SIM904
-counts['origins'] = {}
-counts['dests'] = {}
-counts['station_visits'] = {}
-counts['arrival_status'] = {}
-counts['dept_status'] = {}
-counts['delaymins'] = 0
-counts['duration'] = 0
-counts['distance'] = 0.0
-counts['operator'] = {}
-counts['identity'] = {}
-counts['reason'] = {}
-counts['traction'] = {}
-counts['class'] = {}
-counts['arrival_status_by_operator'] = {}
-counts['delaymins_by_operator'] = {}
-counts['duration_by_operator'] = {}
-counts['distance_by_operator'] = {}
-counts['duration/delay_by_operator'] = {}
-counts['delay/distance_by_operator'] = {}
-counts['percent_delayed_by_operator'] = {}
-counts['delaymins_by_identity'] = {}
-counts['duration_by_identity'] = {}
-counts['distance_by_identity'] = {}
-counts['duration/delay_by_identity'] = {}
-counts['delay/distance_by_identity'] = {}
-counts['percent_delayed_by_identity'] = {}
-counts['arrival_status_by_identity'] = {}
-with open(str(sys.argv[1])) as f:
-    data = json.loads(f.read())
+
+def initialise_counts():
+    return {
+        'origins': {},
+        'traction': {},
+        'class': {},
+        'operator': {},
+        'identity': {},
+        'reason': {},
+        'station_visits': {},
+        'arrival_status': {'early': 0, 'RT': 0, 'late': 0},
+        'delaymins': 0,
+        'duration': 0,
+        'distance': 0,
+        'arrival_status_by_operator': {},
+        'delaymins_by_operator': {},
+        'duration_by_operator': {},
+        'distance_by_operator': {},
+        'duration/delay_by_operator': {},
+        'delay/distance_by_operator': {},
+        'percent_delayed_by_operator': {},
+        'delaymins_by_identity': {},
+        'duration_by_identity': {},
+        'distance_by_identity': {},
+        'duration/delay_by_identity': {},
+        'delay/distance_by_identity': {},
+        'percent_delayed_by_identity': {},
+        'arrival_status_by_identity': {}
+    }
+def get_data(data, counts):
     for row in data['journeys']:
 
         row['operator']['code'] = row['operator'].get('code', 'Unknown')
@@ -144,51 +144,57 @@ with open(str(sys.argv[1])) as f:
         if 'late' in counts['arrival_status_by_identity'][identity]:
             counts['percent_delayed_by_identity'][identity] = counts['arrival_status_by_identity'][identity]['late'] / counts['identity'][identity]
 
-if counts['delaymins'] > 0:
-    counts['duration/delay'] = counts['duration'] / counts['delaymins']
-else:
-    counts['duration/delay'] = 0
-if counts['distance'] > 0:
-    counts['delay/distance'] = counts['delaymins'] / counts['distance']
-else:
-    counts['delay/distance'] = 0
-if counts['duration'] > 0:
-    counts['speed'] = (counts['distance'] / counts['duration']) * 60
-else:
-    counts['speed'] = 0
-counts['journeys'] = len(data['journeys'])
-if counts['journeys'] > 0:
-    counts['delay/journey'] = counts['delaymins'] / counts['journeys']
-else:
-    counts['delay/journey'] = 0
-for operator in counts['distance_by_operator']:
-    if operator in counts['delaymins_by_operator']:
-        counts['delay/distance_by_operator'][operator] = counts['delaymins_by_operator'][operator] / counts['distance_by_operator'][operator]
+    if counts['delaymins'] > 0:
+        counts['duration/delay'] = counts['duration'] / counts['delaymins']
     else:
-        counts['delay/distance_by_operator'][operator] = 0
-for identity in counts['distance_by_identity']:
-    if identity in counts['delaymins_by_identity']:
-        counts['delay/distance_by_identity'][identity] = counts['delaymins_by_identity'][identity] / counts['distance_by_identity'][identity]
+        counts['duration/delay'] = 0
+    if counts['distance'] > 0:
+        counts['delay/distance'] = counts['delaymins'] / counts['distance']
     else:
-        counts['delay/distance_by_identity'][identity] = 0
-for operator in counts['duration_by_operator']:
-    if operator in counts['delaymins_by_operator']:
-        counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator] / counts['delaymins_by_operator'][operator]
+        counts['delay/distance'] = 0
+    if counts['duration'] > 0:
+        counts['speed'] = (counts['distance'] / counts['duration']) * 60
     else:
-        counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator]
+        counts['speed'] = 0
+    counts['journeys'] = len(data['journeys'])
+    if counts['journeys'] > 0:
+        counts['delay/journey'] = counts['delaymins'] / counts['journeys']
+    else:
+        counts['delay/journey'] = 0
+    for operator in counts['distance_by_operator']:
+        if operator in counts['delaymins_by_operator']:
+            counts['delay/distance_by_operator'][operator] = counts['delaymins_by_operator'][operator] / counts['distance_by_operator'][operator]
+        else:
+            counts['delay/distance_by_operator'][operator] = 0
+    for identity in counts['distance_by_identity']:
+        if identity in counts['delaymins_by_identity']:
+            counts['delay/distance_by_identity'][identity] = counts['delaymins_by_identity'][identity] / counts['distance_by_identity'][identity]
+        else:
+            counts['delay/distance_by_identity'][identity] = 0
+    for operator in counts['duration_by_operator']:
+        if operator in counts['delaymins_by_operator']:
+            counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator] / counts['delaymins_by_operator'][operator]
+        else:
+            counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator]
+    
+    for identity in counts['duration_by_identity']:
+        if identity in counts['delaymins_by_identity']:
+            counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity] / counts['delaymins_by_identity'][identity]
+        else:
+            counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity]
+    
+    for item in counts:
+        if item not in ['arrival_status_by_operator', 'arrival_status_by_identity'] and isinstance(counts[item], dict):
+            temp = counts[item]
+            sorted_temp = sorted(temp.items(), key=lambda x: x[1])
+            sorted_temp = dict(sorted_temp)
+            counts[item] = sorted_temp
+    return counts
 
-for identity in counts['duration_by_identity']:
-    if identity in counts['delaymins_by_identity']:
-        counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity] / counts['delaymins_by_identity'][identity]
-    else:
-        counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity]
+with open(str(sys.argv[1])) as f:
+    data = json.loads(f.read())
 
-for item in counts:
-    if item not in ['arrival_status_by_operator', 'arrival_status_by_identity'] and isinstance(counts[item], dict):
-        temp = counts[item]
-        sorted_temp = sorted(temp.items(), key=lambda x: x[1])
-        sorted_temp = dict(sorted_temp)
-        counts[item] = sorted_temp
+counts = get_data(data, initialise_counts())
 late_operators = []
 for operator in counts['arrival_status_by_operator']:
     if 'late' in counts['arrival_status_by_operator'][operator]:
