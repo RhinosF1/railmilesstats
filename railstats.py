@@ -175,8 +175,8 @@ def get_data(data, counts):
      for identity in counts['distance_by_identity']:
          if counts['distance_by_identity'][identity] > 0:
              counts['delay/distance_by_identity'][identity] = counts['delaymins_by_identity'].get(identity, 0) / counts['distance_by_identity'][identity]
-        else:
-            counts['delay/distance_by_identity'][identity] = 0
+         else:
+             counts['delay/distance_by_identity'][identity] = 0
  
      for operator in counts['duration_by_operator']:
          if counts['delaymins_by_operator'][operator] > 0:
