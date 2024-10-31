@@ -198,105 +198,116 @@ def get_data(data, counts):
             counts[item] = sorted_temp
     return counts
 
+def main():
+    parser = argparse.ArgumentParser(description='Process rail journey data.')
+    parser.add_argument('data_file', help='Path to the JSON data file')
+    parser.add_argument('start_date', help='Start date in YYYY-MM-DD format')
+    parser.add_argument('end_date', help='End date in YYYY-MM-DD format')
+    args = parser.parse_args()
 
-with open(str(sys.argv[1])) as f:
-    data = json.loads(f.read())
+    try:
+        with open(args.data_file) as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f'Error: {e}')
+        sys.exit(1)
 
-counts = get_data(data, initialise_counts())
-late_operators = []
-for operator in counts['arrival_status_by_operator']:
-    if 'late' in counts['arrival_status_by_operator'][operator]:
-        late_operators.append(operator)
-worst_operator_by_delayed_journeys = late_operators[0]
-for operator in late_operators:
-    if counts['arrival_status_by_operator'][operator]['late'] > counts['arrival_status_by_operator'][worst_operator_by_delayed_journeys]['late']:
-        worst_operator_by_delayed_journeys = operator
+    counts = get_data(data, initialise_counts())
+    late_operators = []
+    for operator in counts['arrival_status_by_operator']:
+        if 'late' in counts['arrival_status_by_operator'][operator]:
+            late_operators.append(operator)
+    worst_operator_by_delayed_journeys = late_operators[0]
+    for operator in late_operators:
+        if counts['arrival_status_by_operator'][operator]['late'] > counts['arrival_status_by_operator'][worst_operator_by_delayed_journeys]['late']:
+            worst_operator_by_delayed_journeys = operator
+    
+    late_identities = []
+    for identity in counts['arrival_status_by_identity']:
+        if 'late' in counts['arrival_status_by_identity'][identity]:
+            late_identities.append(identity)
+    worst_identity_by_delayed_journeys = late_identities[0]
+    for identity in late_identities:
+        if counts['arrival_status_by_identity'][identity]['late'] > counts['arrival_status_by_identity'][worst_identity_by_delayed_journeys]['late']:
+            worst_identity_by_delayed_journeys = identity
 
-late_identities = []
-for identity in counts['arrival_status_by_identity']:
-    if 'late' in counts['arrival_status_by_identity'][identity]:
-        late_identities.append(identity)
-worst_identity_by_delayed_journeys = late_identities[0]
-for identity in late_identities:
-    if counts['arrival_status_by_identity'][identity]['late'] > counts['arrival_status_by_identity'][worst_identity_by_delayed_journeys]['late']:
-        worst_identity_by_delayed_journeys = identity
+    late_operators = []
+    for operator in counts['delaymins_by_operator']:
+        if counts['delaymins_by_operator'][operator] > 2:
+            late_operators.append(operator)
+    worst_operator_by_delaymins = late_operators[0]
+    for operator in late_operators:
+        if counts['delaymins_by_operator'][operator] > counts['delaymins_by_operator'][worst_operator_by_delaymins]:
+            worst_operator_by_delaymins = operator
 
-late_operators = []
-for operator in counts['delaymins_by_operator']:
-    if counts['delaymins_by_operator'][operator] > 2:
-        late_operators.append(operator)
-worst_operator_by_delaymins = late_operators[0]
-for operator in late_operators:
-    if counts['delaymins_by_operator'][operator] > counts['delaymins_by_operator'][worst_operator_by_delaymins]:
-        worst_operator_by_delaymins = operator
+    late_identities = []
+    for identity in counts['delaymins_by_identity']:
+        if counts['delaymins_by_identity'][identity] > 2:
+            late_identities.append(identity)
+    worst_identity_by_delaymins = late_identities[0]
+    for identity in late_identities:
+        if counts['delaymins_by_identity'][identity] > counts['delaymins_by_identity'][worst_identity_by_delaymins]:
+            worst_identity_by_delaymins = identity
 
-late_identities = []
-for identity in counts['delaymins_by_identity']:
-    if counts['delaymins_by_identity'][identity] > 2:
-        late_identities.append(identity)
-worst_identity_by_delaymins = late_identities[0]
-for identity in late_identities:
-    if counts['delaymins_by_identity'][identity] > counts['delaymins_by_identity'][worst_identity_by_delaymins]:
-        worst_identity_by_delaymins = identity
-
-print('DEBUG OUTPUT')
-print(json.dumps(counts, indent=2))
-print('Pretty Output')
-print(f'Between {sys.argv[2]} and {sys.argv[3]}, I have taken {counts["journeys"]} rail journeys spanning {int(counts["distance"])} miles taking {counts["duration"]} minutes.')
-print(f'That makes for an average speed of {int(counts["speed"])}mph and an average journey length of {int(counts["distance"] / counts["journeys"])} miles so {int((counts["duration"]) / (counts["journeys"]))} minutes per journey.')
-print(f'This involved arriving or departing from {len(counts["station_visits"])} different stations with the most popular being {list(counts["station_visits"])[-1]}.')
-print('All of the stations I visted were:')
-print(*list(counts['station_visits']), sep=', ')
-traction = list(counts['traction'])[-1]
-if traction == 'Unknown':
-    if len(counts['traction']) >= 2:
-        traction = list(counts['traction'])[-2]
-        print(f'The most popular operator was {list(counts["operator"])[-1]} of the {len(counts["operator"])} I used and most popular traction {traction} of {len(counts["traction"])} units I\'ve been on.')
+    print('DEBUG OUTPUT')
+    print(json.dumps(counts, indent=2))
+    print('Pretty Output')
+    print(f'Between {args.start_date} and {args.end_date}, I have taken {counts["journeys"]} rail journeys spanning {int(counts["distance"])} miles taking {counts["duration"]} minutes.')
+    print(f'That makes for an average speed of {int(counts["speed"])}mph and an average journey length of {int(counts["distance"] / counts["journeys"])} miles so {int((counts["duration"]) / (counts["journeys"]))} minutes per journey.')
+    print(f'This involved arriving or departing from {len(counts["station_visits"])} different stations with the most popular being {list(counts["station_visits"])[-1]}.')
+    print('All of the stations I visted were:')
+    print(*list(counts['station_visits']), sep=', ')
+    traction = list(counts['traction'])[-1]
+    if traction == 'Unknown':
+        if len(counts['traction']) >= 2:
+            traction = list(counts['traction'])[-2]
+            print(f'The most popular operator was {list(counts["operator"])[-1]} of the {len(counts["operator"])} I used and most popular traction {traction} of {len(counts["traction"])} units I\'ve been on.')
+        else:
+            print(f'The most popular operator was {list(counts["operator"])[-1]} of the {len(counts["operator"])} I used.')
     else:
-        print(f'The most popular operator was {list(counts["operator"])[-1]} of the {len(counts["operator"])} I used.')
-else:
-    print(f'The most popular operator was {list(counts["operator"])[-1]} of the {len(counts["operator"])} I used and most popular traction {traction} of {len(counts["traction"])} units I\'ve been on.')
-print(f'I have seen the most of class {list(counts["class"])[-1]} trains with {counts["class"][list(counts["class"])[-1]]} occurences of them.')
-early_count = counts['arrival_status'].get('early', 0)
-rt_count = counts['arrival_status'].get('RT', 0)
-late_count = counts['arrival_status'].get('late', 0)
+        print(f'The most popular operator was {list(counts["operator"])[-1]} of the {len(counts["operator"])} I used and most popular traction {traction} of {len(counts["traction"])} units I\'ve been on.')
+    print(f'I have seen the most of class {list(counts["class"])[-1]} trains with {counts["class"][list(counts["class"])[-1]]} occurences of them.')
+    early_count = counts['arrival_status'].get('early', 0)
+    rt_count = counts['arrival_status'].get('RT', 0)
+    late_count = counts['arrival_status'].get('late', 0)
 
-if early_count > 0:
-    print(f'We managed to arrive early on {early_count} occasions, on time {rt_count} times but were late {late_count} times.')
-else:
-    print(f'We managed to arrive late {late_count} times.')
-print(f'We make for an average of {counts["delay/distance"]} delay minutes per mile or {int(counts["delay/journey"])} minutes per journey.')
-headcode = list(counts['identity'])[-1]
-if headcode == 'Unknown':
-    if len(counts['identity']) >= 2:
-        headcode = list(counts['identity'])[-2]
+    if early_count > 0:
+        print(f'We managed to arrive early on {early_count} occasions, on time {rt_count} times but were late {late_count} times.')
+    else:
+        print(f'We managed to arrive late {late_count} times.')
+    print(f'We make for an average of {counts["delay/distance"]} delay minutes per mile or {int(counts["delay/journey"])} minutes per journey.')
+    headcode = list(counts['identity'])[-1]
+    if headcode == 'Unknown':
+        if len(counts['identity']) >= 2:
+            headcode = list(counts['identity'])[-2]
+            print(f'The most used headcode was {headcode}.')
+    else:
         print(f'The most used headcode was {headcode}.')
-else:
-    print(f'The most used headcode was {headcode}.')
-print(f'{worst_operator_by_delayed_journeys} scores the most delayed journeys with {counts["arrival_status_by_operator"][worst_operator_by_delayed_journeys]["late"]} journeys delayed.')
-print(f'but compared to number of journeys, the most likely operator for a delay is {list(counts["percent_delayed_by_operator"])[-1]} with {int((counts["percent_delayed_by_operator"][list(counts["percent_delayed_by_operator"])[-1]]) * 100)}% delayed.')
-print(f'{worst_operator_by_delaymins} scores the most delay minutes with {counts["delaymins_by_operator"][worst_operator_by_delaymins]} minutes delay.')
-print(f'but compared to duration, the most likely operator for a delay is {list(counts["duration/delay_by_operator"])[0]} with {int(counts["duration/delay_by_operator"][list(counts["duration/delay_by_operator"])[0]])} delay minutes per minute travel.')
-print('Our operators with 0% delays are:')
-no_delay_ops = []
-for operator in counts['percent_delayed_by_operator']:
-    if counts['percent_delayed_by_operator'][operator] == 0.0:
-        no_delay_ops.append(operator)
-print(*list(no_delay_ops), sep=', ')
-print(f'The most to-time operator by delays per minute travelled is {list(counts["duration/delay_by_operator"])[-1]} with {int(counts["duration/delay_by_operator"][list(counts["duration/delay_by_operator"])[-1]])} minutes of travel needed per minute of delay.')
+    print(f'{worst_operator_by_delayed_journeys} scores the most delayed journeys with {counts["arrival_status_by_operator"][worst_operator_by_delayed_journeys]["late"]} journeys delayed.')
+    print(f'but compared to number of journeys, the most likely operator for a delay is {list(counts["percent_delayed_by_operator"])[-1]} with {int((counts["percent_delayed_by_operator"][list(counts["percent_delayed_by_operator"])[-1]]) * 100)}% delayed.')
+    print(f'{worst_operator_by_delaymins} scores the most delay minutes with {counts["delaymins_by_operator"][worst_operator_by_delaymins]} minutes delay.')
+    print(f'but compared to duration, the most likely operator for a delay is {list(counts["duration/delay_by_operator"])[0]} with {int(counts["duration/delay_by_operator"][list(counts["duration/delay_by_operator"])[0]])} delay minutes per minute travel.')
+    print('Our operators with 0% delays are:')
+    no_delay_ops = []
+    for operator in counts['percent_delayed_by_operator']:
+        if counts['percent_delayed_by_operator'][operator] == 0.0:
+            no_delay_ops.append(operator)
+    print(*list(no_delay_ops), sep=', ')
+    print(f'The most to-time operator by delays per minute travelled is {list(counts["duration/delay_by_operator"])[-1]} with {int(counts["duration/delay_by_operator"][list(counts["duration/delay_by_operator"])[-1]])} minutes of travel needed per minute of delay.')
+    
+    
+    print(f'{worst_identity_by_delayed_journeys} scores the most delayed journeys with {counts["arrival_status_by_identity"][worst_identity_by_delayed_journeys]["late"]} journeys delayed.')
+    print(f'but compared to number of journeys, the most likely identity for a delay is {list(counts["percent_delayed_by_identity"])[-1]} with {int((counts["percent_delayed_by_identity"][list(counts["percent_delayed_by_identity"])[-1]]) * 100)}% delayed.')
+    print(f'{worst_identity_by_delaymins} scores the most delay minutes with {counts["delaymins_by_identity"][worst_identity_by_delaymins]} minutes delay.')
+    print(f'but compared to duration, the most likely identity for a delay is {list(counts["duration/delay_by_identity"])[0]} with {int(counts["duration/delay_by_identity"][list(counts["duration/delay_by_identity"])[0]])} delay minutes per minute travel.')
+    print('Our identities with 0% delays are:')
+    no_delay_idens = []
+    for identity in counts['percent_delayed_by_identity']:
+        if counts['percent_delayed_by_identity'][identity] == 0.0:
+            no_delay_idens.append(identity)
+    print(*list(no_delay_idens), sep=', ')
+    print(f'The most to-time identity by delays per minute travelled is {list(counts["duration/delay_by_identity"])[-1]} with {int(counts["duration/delay_by_identity"][list(counts["duration/delay_by_identity"])[-1]])} minutes of travel needed per minute of delay.')
+    print(f'My most popular reason for travel is {list(counts["reason"])[-1]} with {counts["reason"][list(counts["reason"])[-1]]} journeys')
 
-
-print(f'{worst_identity_by_delayed_journeys} scores the most delayed journeys with {counts["arrival_status_by_identity"][worst_identity_by_delayed_journeys]["late"]} journeys delayed.')
-print(f'but compared to number of journeys, the most likely identity for a delay is {list(counts["percent_delayed_by_identity"])[-1]} with {int((counts["percent_delayed_by_identity"][list(counts["percent_delayed_by_identity"])[-1]]) * 100)}% delayed.')
-print(f'{worst_identity_by_delaymins} scores the most delay minutes with {counts["delaymins_by_identity"][worst_identity_by_delaymins]} minutes delay.')
-print(f'but compared to duration, the most likely identity for a delay is {list(counts["duration/delay_by_identity"])[0]} with {int(counts["duration/delay_by_identity"][list(counts["duration/delay_by_identity"])[0]])} delay minutes per minute travel.')
-print('Our identities with 0% delays are:')
-no_delay_idens = []
-for identity in counts['percent_delayed_by_identity']:
-    if counts['percent_delayed_by_identity'][identity] == 0.0:
-        no_delay_idens.append(identity)
-print(*list(no_delay_idens), sep=', ')
-print(f'The most to-time identity by delays per minute travelled is {list(counts["duration/delay_by_identity"])[-1]} with {int(counts["duration/delay_by_identity"][list(counts["duration/delay_by_identity"])[-1]])} minutes of travel needed per minute of delay.')
-
-
-print(f'My most popular reason for travel is {list(counts["reason"])[-1]} with {counts["reason"][list(counts["reason"])[-1]]} journeys')
+if __name__ == '__main__':
+    main()
