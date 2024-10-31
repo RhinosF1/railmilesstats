@@ -31,7 +31,6 @@ counts['arrival_status_by_identity'] = {}
 with open(str(sys.argv[1])) as f:
     data = json.loads(f.read())
     for row in data['journeys']:
-        if row['operator']['code'] == 'LUL':
             
         if row['operator']['code'] is None:
             row['operator']['code'] = 'Unknown'
