@@ -166,29 +166,30 @@ def get_data(data, counts):
         counts['delay/journey'] = counts['delaymins'] / counts['journeys']
     else:
         counts['delay/journey'] = 0
+
     for operator in counts['distance_by_operator']:
         if counts['distance_by_operator'][operator] > 0:
             counts['delay/distance_by_operator'][operator] = counts['delaymins_by_operator'].get(operator, 0) / counts['distance_by_operator'][operator]
         else:
             counts['delay/distance_by_operator'][operator] = 0
- 
-     for identity in counts['distance_by_identity']:
-         if counts['distance_by_identity'][identity] > 0:
-             counts['delay/distance_by_identity'][identity] = counts['delaymins_by_identity'].get(identity, 0) / counts['distance_by_identity'][identity]
-         else:
-             counts['delay/distance_by_identity'][identity] = 0
- 
-     for operator in counts['duration_by_operator']:
-         if counts['delaymins_by_operator'][operator] > 0:
-             counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator] / counts['delaymins_by_operator'][operator]
-         else:
-             counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator]
- 
-     for identity in counts['duration_by_identity']:
-         if counts['delaymins_by_identity'][identity] > 0:
-             counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity] / counts['delaymins_by_identity'][identity]
-         else:
-             counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity]
+
+    for identity in counts['distance_by_identity']:
+        if counts['distance_by_identity'][identity] > 0:
+            counts['delay/distance_by_identity'][identity] = counts['delaymins_by_identity'].get(identity, 0) / counts['distance_by_identity'][identity]
+        else:
+            counts['delay/distance_by_identity'][identity] = 0
+    
+    for operator in counts['duration_by_operator']:
+        if counts['delaymins_by_operator'].get(operator, 0) > 0:
+            counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator] / counts['delaymins_by_operator'][operator]
+        else:
+            counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator]
+
+    for identity in counts['duration_by_identity']:
+        if counts['delaymins_by_identity'].get(identity, 0) > 0:
+            counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity] / counts['delaymins_by_identity'][identity]
+        else:
+            counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity]
     for item in counts:
         if item not in ['arrival_status_by_operator', 'arrival_status_by_identity'] and isinstance(counts[item], dict):
             temp = counts[item]
