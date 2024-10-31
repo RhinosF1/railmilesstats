@@ -146,22 +146,22 @@ with open(str(sys.argv[1])) as f:
         if 'late' in counts['arrival_status_by_identity'][identity]:
             counts['percent_delayed_by_identity'][identity] = counts['arrival_status_by_identity'][identity]['late'] / counts['identity'][identity]
 
-if counts["delaymins"] > 0:
-    counts["duration/delay"] = counts["duration"] / counts["delaymins"]
+if counts['delaymins'] > 0:
+    counts['duration/delay'] = counts['duration'] / counts['delaymins']
 else:
-    counts["duration/delay"] = 0
-if counts["distance"] > 0:
-    counts["delay/distance"] = counts["delaymins"] / counts["distance"]
+    counts['duration/delay'] = 0
+if counts['distance'] > 0:
+    counts['delay/distance'] = counts['delaymins'] / counts['distance']
 else:
-    counts["delay/distance"] = 0
-if counts["duration"] > 0:
-    counts["speed"] = (counts["distance"] / counts["duration"]) * 60
+    counts['delay/distance'] = 0
+if counts['duration'] > 0:
+    counts['speed'] = (counts['distance'] / counts['duration']) * 60
 else:
-    counts["speed"] = 0
-if counts["journeys"] > 0:
-    counts["delay/journey"] = counts["delaymins"] / counts["journeys"]
+    counts['speed'] = 0
+if counts['journeys'] > 0:
+    counts['delay/journey'] = counts['delaymins'] / counts['journeys']
 else:
-    counts["delay/journey"] = 0
+    counts['delay/journey'] = 0
     for operator in counts['distance_by_operator']:
         if operator in counts['delaymins_by_operator']:
             if (counts['delaymins_by_operator'][operator] > 0):
@@ -248,9 +248,9 @@ if traction == 'Unknown':
 else:
     print(f'The most popular operator was {list(counts["operator"])[-1]} of the {len(counts["operator"])} I used and most popular traction {traction} of {len(counts["traction"])} units I\'ve been on.')
 print(f'I have seen the most of class {list(counts["class"])[-1]} trains with {counts["class"][list(counts["class"])[-1]]} occurences of them.')
-early_count = counts["arrival_status"].get("early", 0)
-rt_count = counts["arrival_status"].get("RT", 0)
-late_count = counts["arrival_status"].get("late", 0)
+early_count = counts['arrival_status'].get('early', 0)
+rt_count = counts['arrival_status'].get('RT', 0)
+late_count = counts['arrival_status'].get('late', 0)
 
 if early_count > 0:
     print(f'We managed to arrive early on {early_count} occasions, on time {rt_count} times but were late {late_count} times.')
