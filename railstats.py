@@ -202,8 +202,8 @@ def get_data(data, counts):
 def main():
     parser = argparse.ArgumentParser(description='Process rail journey data.')
     parser.add_argument('data_file', help='Path to the JSON data file')
-    parser.add_argument('start_date', help='Start date in YYYY-MM-DD format')
-    parser.add_argument('end_date', help='End date in YYYY-MM-DD format')
+    parser.add_argument('start_date', help='Start date')
+    parser.add_argument('end_date', help='End date')
     args = parser.parse_args()
 
     try:
