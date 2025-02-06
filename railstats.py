@@ -321,7 +321,7 @@ def main():
     print(f'My most popular reason for travel is {list(counts["reason"])[-1]} with {counts["reason"][list(counts["reason"])[-1]]} journeys')
     print('')
     print('Credits')
-    print('Train running data provided by Real Time Trains under license from Network Rail Infrastructre Limited using the Open Government License.')
+    print('Train running data provided by RealTimeTrains under license from Network Rail Infrastructre Limited using the Open Government License.')
     print('Unit data provided using Know Your Train by RealTimeTrains where possible or manually added otherwise.')
     print('Data is stored in Railmiles for all but cost data which is thanks to StationChecker by Jack Wingate.')
 
