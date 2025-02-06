@@ -32,6 +32,8 @@ def initialise_counts():
         'delay/distance_by_identity': {},
         'percent_delayed_by_identity': {},
         'arrival_status_by_identity': {},
+        'cost': 0.00,
+        'delay_repay': 0.00
     }
 
 
@@ -204,6 +206,8 @@ def main():
     parser.add_argument('data_file', help='Path to the JSON data file')
     parser.add_argument('start_date', help='Start date')
     parser.add_argument('end_date', help='End date')
+    parser.add_argument('journey_cost', help='Retail cost of journeys')
+    parser.add_argument('delay_repay', help='Amount of delay repay')
     args = parser.parse_args()
 
     try:
@@ -214,6 +218,8 @@ def main():
         sys.exit(1)
 
     counts = get_data(data, initialise_counts())
+    counts['cost'] = float(args.journey_cost)
+    counts['delay_repay'] = float(args.delay_repay)
     late_operators = []
     for operator in counts['arrival_status_by_operator']:
         if 'late' in counts['arrival_status_by_operator'][operator]:
@@ -254,6 +260,11 @@ def main():
     print(json.dumps(counts, indent=2))
     print('Pretty Output')
     print(f'Between {args.start_date} and {args.end_date}, I have taken {counts["journeys"]} rail journeys spanning {int(counts["distance"])} miles taking {counts["duration"]} minutes.')
+    format_cost = "{:.2f}".format(counts["cost"])
+    format_adjusted_cost = "{:.2f}".format(counts["cost"]-counts['delay_repay'])
+    format_pm_cost = "{:.2f}".format(counts["cost"]/counts["distance"])
+    format_adjusted_pm_cost = "{:.2f}".format((counts["cost"]-counts['delay_repay'])/counts["distance"])
+    print(f'This retailed at £{format_cost} and is adjusted to £{format_adjusted_cost} after refunds working out at £{format_pm_cost} per mile adjusted to £{format_adjusted_pm_cost} per mile with refunds.')
     print(f'That makes for an average speed of {int(counts["speed"])}mph and an average journey length of {int(counts["distance"] / counts["journeys"])} miles so {int((counts["duration"]) / (counts["journeys"]))} minutes per journey.')
     print(f'This involved arriving or departing from {len(counts["station_visits"])} different stations with the most popular being {list(counts["station_visits"])[-1]}.')
     print('All of the stations I visted were:')
@@ -308,6 +319,12 @@ def main():
     print(*list(no_delay_idens), sep=', ')
     print(f'The most to-time identity by delays per minute travelled is {list(counts["duration/delay_by_identity"])[-1]} with {int(counts["duration/delay_by_identity"][list(counts["duration/delay_by_identity"])[-1]])} minutes of travel needed per minute of delay.')
     print(f'My most popular reason for travel is {list(counts["reason"])[-1]} with {counts["reason"][list(counts["reason"])[-1]]} journeys')
+    print('')
+    print('Credits')
+    print('Train running data provided by Real Time Trains under license from Network Rail Infrastructre Limited using the Open Government License.')
+    print('Unit data provided using Know Your Train by RealTimeTrains where possible or manually added otherwise.')
+    print('Data is stored in Railmiles for all but cost data which is thanks to StationChecker by Jack Wingate.')
+    
 
 
 if __name__ == '__main__':
