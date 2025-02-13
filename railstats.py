@@ -305,9 +305,9 @@ def main():
     total_count = early_count + rt_count + late_count
 
     if early_count > 0:
-        print(f'We managed to arrive early on {early_count} occasions, on time {rt_count} times but were late {late_count} times ({(late_count / total_count)*100}%).')
+        print(f'We managed to arrive early on {early_count} occasions, on time {rt_count} times but were late {late_count} times ({(late_count / total_count) * 100}%).')
     else:
-        print(f'We managed to arrive late {late_count} times ({(late_count / total_count)*100}%).')
+        print(f'We managed to arrive late {late_count} times ({(late_count / total_count) * 100}%).')
     print(f'We make for an average of {counts["delay/distance"]} delay minutes per mile or {int(counts["delay/journey"])} minutes per journey.')
     headcode = list(counts['identity'])[-1]
     if headcode == 'Unknown' or headcode is None:
