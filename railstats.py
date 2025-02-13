@@ -64,7 +64,7 @@ def get_data(data, counts):
         else:
             counts['station_visits'][row['destination']] = 1
 
-        if row['act_delay'] == None:
+        if row['act_delay'] is None:
             row['act_arrival_status'] = 'Missing'
         if row['act_arrival_status'] == '':
             row['act_arrival_status'] = 'RT'
@@ -74,7 +74,7 @@ def get_data(data, counts):
             counts['arrival_status'][row['act_arrival_status']] = 1
         if row['operator']['code'] not in counts['arrival_status_by_operator'].keys():
             counts['arrival_status_by_operator'][row['operator']['code']] = {"RT": 0, "late": 0, "early": 0, "Missing": 0}
-            
+
         if row['act_arrival_status'] in counts['arrival_status_by_operator'][row['operator']['code']]:
             counts['arrival_status_by_operator'][row['operator']['code']][row['act_arrival_status']] += 1
         else:
@@ -85,7 +85,7 @@ def get_data(data, counts):
             counts['arrival_status_by_identity'][row['identity']][row['act_arrival_status']] += 1
         else:
             counts['arrival_status_by_identity'][row['identity']][row['act_arrival_status']] = 1
-        
+
         if row['act_arrival_status'] == 'Missing':
             row['act_departure_status'] = 'Missing'
         if row['act_departure_status'] == '':
@@ -151,7 +151,7 @@ def get_data(data, counts):
         if 'late' in counts['arrival_status_by_operator'][operator]:
             try:
                 counts['percent_delayed_by_operator'][operator] = counts['arrival_status_by_operator'][operator]['late'] / (counts['arrival_status_by_operator'][operator]['late'] + counts['arrival_status_by_operator'][operator]['early'] + counts['arrival_status_by_operator'][operator]['RT'])
-            except:
+            except ZeroDivisionError:
                 counts['percent_delayed_by_operator'][operator] = -1.0
 
     for identity in counts['identity']:
@@ -159,7 +159,7 @@ def get_data(data, counts):
         if 'late' in counts['arrival_status_by_identity'][identity]:
             try:
                 counts['percent_delayed_by_identity'][identity] = counts['arrival_status_by_identity'][identity]['late'] / (counts['arrival_status_by_identity'][identity]['early'] + counts['arrival_status_by_identity'][identity]['late'] + counts['arrival_status_by_identity'][identity]['RT'])
-            except:
+            except ZeroDivisionError:
                 counts['percent_delayed_by_identity'][identity] = -1.0
 
     if counts['delaymins'] > 0:
@@ -296,9 +296,8 @@ def main():
     else:
         print(f'The most popular operator was {list(counts["operator"])[-1]} of the {len(counts["operator"])} I used and most popular traction {traction} of {len(counts["traction"])} units I\'ve been on.')
     classnum = list(counts['class'])[-1]
-    if classnum == 'Unk' or classnum == None:
-        if len(counts['class']) >= 2:
-            classnum = list(counts['class'])[-2]
+    if (classnum == 'Unk' or classnum is None) and len(counts['class']) >= 2:
+        classnum = list(counts['class'])[-2]
     print(f'I have seen the most of class {classnum} trains with {counts["class"][classnum]} occurences of them.')
     early_count = counts['arrival_status'].get('early', 0)
     rt_count = counts['arrival_status'].get('RT', 0)
@@ -306,12 +305,12 @@ def main():
     total_count = early_count + rt_count + late_count
 
     if early_count > 0:
-        print(f'We managed to arrive early on {early_count} occasions, on time {rt_count} times but were late {late_count} times ({(late_count/total_count)*100}%).')
+        print(f'We managed to arrive early on {early_count} occasions, on time {rt_count} times but were late {late_count} times ({(late_count / total_count)*100}%).')
     else:
-        print(f'We managed to arrive late {late_count} times ({(late_count/total_count)*100}%).')
+        print(f'We managed to arrive late {late_count} times ({(late_count / total_count)*100}%).')
     print(f'We make for an average of {counts["delay/distance"]} delay minutes per mile or {int(counts["delay/journey"])} minutes per journey.')
     headcode = list(counts['identity'])[-1]
-    if headcode == 'Unknown' or headcode == None:
+    if headcode == 'Unknown' or headcode is None:
         if len(counts['identity']) >= 2:
             headcode = list(counts['identity'])[-2]
             print(f'The most used headcode was {headcode}.')
