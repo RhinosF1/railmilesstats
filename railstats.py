@@ -64,6 +64,8 @@ def get_data(data, counts):
         else:
             counts['station_visits'][row['destination']] = 1
 
+        if row['act_delay'] is None:
+            row['act_arrival_status'] = 'Missing'
         if row['act_arrival_status'] == '':
             row['act_arrival_status'] = 'RT'
         if row['act_arrival_status'] in counts['arrival_status']:
@@ -71,18 +73,21 @@ def get_data(data, counts):
         else:
             counts['arrival_status'][row['act_arrival_status']] = 1
         if row['operator']['code'] not in counts['arrival_status_by_operator'].keys():
-            counts['arrival_status_by_operator'][row['operator']['code']] = {}
+            counts['arrival_status_by_operator'][row['operator']['code']] = {"RT": 0, "late": 0, "early": 0, "Missing": 0}
+
         if row['act_arrival_status'] in counts['arrival_status_by_operator'][row['operator']['code']]:
             counts['arrival_status_by_operator'][row['operator']['code']][row['act_arrival_status']] += 1
         else:
             counts['arrival_status_by_operator'][row['operator']['code']][row['act_arrival_status']] = 1
         if row['identity'] not in counts['arrival_status_by_identity'].keys():
-            counts['arrival_status_by_identity'][row['identity']] = {}
+            counts['arrival_status_by_identity'][row['identity']] = {"RT": 0, "early": 0, "late": 0, "Missing": 0}
         if row['act_arrival_status'] in counts['arrival_status_by_identity'][row['identity']]:
             counts['arrival_status_by_identity'][row['identity']][row['act_arrival_status']] += 1
         else:
             counts['arrival_status_by_identity'][row['identity']][row['act_arrival_status']] = 1
 
+        if row['act_arrival_status'] == 'Missing':
+            row['act_departure_status'] = 'Missing'
         if row['act_departure_status'] == '':
             row['act_departure_status'] = 'RT'
         if row['act_departure_status'] in counts['dept_status']:
@@ -144,12 +149,18 @@ def get_data(data, counts):
     for operator in counts['operator']:
         counts['percent_delayed_by_operator'][operator] = 0.0
         if 'late' in counts['arrival_status_by_operator'][operator]:
-            counts['percent_delayed_by_operator'][operator] = counts['arrival_status_by_operator'][operator]['late'] / counts['operator'][operator]
+            try:
+                counts['percent_delayed_by_operator'][operator] = counts['arrival_status_by_operator'][operator]['late'] / (counts['arrival_status_by_operator'][operator]['late'] + counts['arrival_status_by_operator'][operator]['early'] + counts['arrival_status_by_operator'][operator]['RT'])
+            except ZeroDivisionError:
+                counts['percent_delayed_by_operator'][operator] = -1.0
 
     for identity in counts['identity']:
         counts['percent_delayed_by_identity'][identity] = 0.0
         if 'late' in counts['arrival_status_by_identity'][identity]:
-            counts['percent_delayed_by_identity'][identity] = counts['arrival_status_by_identity'][identity]['late'] / counts['identity'][identity]
+            try:
+                counts['percent_delayed_by_identity'][identity] = counts['arrival_status_by_identity'][identity]['late'] / (counts['arrival_status_by_identity'][identity]['early'] + counts['arrival_status_by_identity'][identity]['late'] + counts['arrival_status_by_identity'][identity]['RT'])
+            except ZeroDivisionError:
+                counts['percent_delayed_by_identity'][identity] = -1.0
 
     if counts['delaymins'] > 0:
         counts['duration/delay'] = counts['duration'] / counts['delaymins']
@@ -185,13 +196,19 @@ def get_data(data, counts):
         if counts['delaymins_by_operator'].get(operator, 0) > 0:
             counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator] / counts['delaymins_by_operator'][operator]
         else:
-            counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator]
+            if counts['operator'][operator] == counts['arrival_status_by_operator'][operator]['Missing']:
+                pass
+            else:
+                counts['duration/delay_by_operator'][operator] = counts['duration_by_operator'][operator]
 
     for identity in counts['duration_by_identity']:
         if counts['delaymins_by_identity'].get(identity, 0) > 0:
             counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity] / counts['delaymins_by_identity'][identity]
         else:
-            counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity]
+            if counts['identity'][identity] == counts['arrival_status_by_identity'][identity]['Missing']:
+                pass
+            else:
+                counts['duration/delay_by_identity'][identity] = counts['duration_by_identity'][identity]
     for item in counts:
         if item not in ['arrival_status_by_operator', 'arrival_status_by_identity'] and isinstance(counts[item], dict):
             temp = counts[item]
@@ -278,18 +295,22 @@ def main():
             print(f'The most popular operator was {list(counts["operator"])[-1]} of the {len(counts["operator"])} I used.')
     else:
         print(f'The most popular operator was {list(counts["operator"])[-1]} of the {len(counts["operator"])} I used and most popular traction {traction} of {len(counts["traction"])} units I\'ve been on.')
-    print(f'I have seen the most of class {list(counts["class"])[-1]} trains with {counts["class"][list(counts["class"])[-1]]} occurences of them.')
+    classnum = list(counts['class'])[-1]
+    if (classnum == 'Unk' or classnum is None) and len(counts['class']) >= 2:
+        classnum = list(counts['class'])[-2]
+    print(f'I have seen the most of class {classnum} trains with {counts["class"][classnum]} occurences of them.')
     early_count = counts['arrival_status'].get('early', 0)
     rt_count = counts['arrival_status'].get('RT', 0)
     late_count = counts['arrival_status'].get('late', 0)
+    total_count = early_count + rt_count + late_count
 
     if early_count > 0:
-        print(f'We managed to arrive early on {early_count} occasions, on time {rt_count} times but were late {late_count} times.')
+        print(f'We managed to arrive early on {early_count} occasions, on time {rt_count} times but were late {late_count} times ({(late_count / total_count) * 100}%).')
     else:
-        print(f'We managed to arrive late {late_count} times.')
+        print(f'We managed to arrive late {late_count} times ({(late_count / total_count) * 100}%).')
     print(f'We make for an average of {counts["delay/distance"]} delay minutes per mile or {int(counts["delay/journey"])} minutes per journey.')
     headcode = list(counts['identity'])[-1]
-    if headcode == 'Unknown':
+    if headcode == 'Unknown' or headcode is None:
         if len(counts['identity']) >= 2:
             headcode = list(counts['identity'])[-2]
             print(f'The most used headcode was {headcode}.')
@@ -324,6 +345,7 @@ def main():
     print('Train running data provided by RealTimeTrains under license from Network Rail Infrastructre Limited using the Open Government License.')
     print('Unit data provided using Know Your Train by RealTimeTrains where possible or manually added otherwise.')
     print('Data is stored in Railmiles for all but cost data which is thanks to StationChecker by Jack Wingate.')
+    print('\nTrain running data is excluded for LUL services due to poor data reliability. Any data provided for LUL is best effort based on observations and trackernet matching. Services where timetable data was unavailable have been excluded from the relevant stats and are either omitted or show as -1')
 
 
 if __name__ == '__main__':
